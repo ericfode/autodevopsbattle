@@ -1,0 +1,33 @@
+[package]
+name = "devops-entropy"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A DevOps simulation game about managing technical debt and system architecture"
+
+[dependencies]
+bevy = "0.11"  # Core game engine
+bevy_egui = "0.21"  # Immediate mode GUI
+petgraph = "0.6"  # Graph algorithms
+statrs = "0.16"  # Statistical distributions
+rand = "0.8"  # Random number generation
+rand_distr = "0.4"  # Probability distributions
+serde = { version = "1.0", features = ["derive"] }  # Serialization
+serde_json = "1.0"  # JSON handling
+
+[dev-dependencies]
+criterion = "0.5"  # Benchmarking
+mockall = "0.11"  # Mocking for tests
+proptest = "1.2"  # Property testing
+test-case = "3.1"  # Test case macros
+
+[profile.dev]
+opt-level = 1  # Slightly faster builds while maintaining debug info
+
+[profile.dev.package."*"]
+opt-level = 3  # Full optimization for dependencies
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
