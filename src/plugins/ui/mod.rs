@@ -1,5 +1,8 @@
 mod graph_view;
 mod system_status;
+mod planning_panel;
+#[cfg(test)]
+mod test_utils;
 
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
@@ -15,6 +18,7 @@ impl Plugin for UiPlugin {
            .add_systems(Update, (
                graph_view::show_graph,
                system_status::show_system_status,
+               planning_panel::show_planning_panel,
            ).run_if(not(in_state(GameState::Loading))));
     }
 }

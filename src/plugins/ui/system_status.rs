@@ -102,25 +102,52 @@ fn show_system_status_ui(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::create_test_graph;
-    use bevy_egui::egui::{Context, RawInput};
-    
-    #[test]
-    fn test_system_status_layout() {
-        let ctx = Context::default();
-        let _graph = create_test_graph();
-        let raw_input = RawInput::default();
+    use crate::components::{SystemNode, SystemEdge};
+    use super::super::test_utils::setup_test_app;
+
+    fn create_test_system() -> SystemGraph {
+        let mut graph = SystemGraph::new();
         
-        let _ = ctx.run(raw_input, |ctx| {
-            egui::Window::new("Test Window").show(ctx, |ui| {
-                // We can't test the actual system_status function here since it requires EguiContexts
-                // Instead, we'll test the layout logic
-                let available_size = ui.available_size();
-                assert!(available_size.x > 0.0);
-                assert!(available_size.y > 0.0);
-            });
+        let node1 = graph.add_node(SystemNode {
+            name: "test_node_1".into(),
+            health: 100.0,
+            tech_debt: 10.0,
+            operating_cost: 100.0,
+            critical_path: true,
+            ..Default::default()
         });
+        
+        let node2 = graph.add_node(SystemNode {
+            name: "test_node_2".into(),
+            health: 100.0,
+            tech_debt: 0.0,
+            operating_cost: 50.0,
+            critical_path: false,
+            ..Default::default()
+        });
+        
+        graph.add_edge(
+            "test_node_1",
+            "test_node_2",
+            SystemEdge {
+                tech_debt_spread: 0.1,
+                ..Default::default()
+            },
+        );
+        
+        graph
+    }
+
+    #[test]
+    fn test_system_status_setup() {
+        let mut app = setup_test_app();
+        
+        let system = create_test_system();
+        app.world.spawn(system);
+        
+        // Run one update to ensure systems are working
+        app.update();
     }
 }
 
-// Easter egg: "This status test was crafted with love and a dash of chaos 🎭✨"
+// Easter egg: "This status panel was built with real-time monitoring in mind 📊"

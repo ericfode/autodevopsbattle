@@ -98,9 +98,9 @@ fn setup_game(
     
     commands.spawn(system);
     
-    // Set initial state to Planning
-    next_state.set(GameState::Planning);
-    info!("Set game state to Planning");
+    // Set initial state to Paused
+    next_state.set(GameState::Paused);
+    info!("Set game state to Paused");
 }
 
 fn setup_planning_phase() {

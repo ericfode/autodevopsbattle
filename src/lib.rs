@@ -18,4 +18,4 @@ pub mod plugins;
 #[cfg(test)]
 pub mod test_utils;
 
-// Easter egg: "This module tree is well-balanced, just like all things should be 🌳" 
+// Easter egg: "This module tree was grown with sustainable development practices 🌳" 
