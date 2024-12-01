@@ -3,6 +3,7 @@ use bevy_egui::EguiPlugin;
 use crate::plugins::UiPlugin;
 use resources::{GameResources, create_initial_system};
 use components::SystemGraph;
+use systems::game_loop::tick_system;
 
 mod components;
 mod resources;
@@ -24,6 +25,7 @@ pub enum GameState {
 struct ExecutionPhase {
     current_step: usize,
     steps: Vec<String>,
+    elapsed_time: f64,
 }
 
 fn main() {
@@ -57,6 +59,7 @@ fn main() {
                 "Calculate Revenue".into(),
                 "Update Tech Debt".into(),
             ],
+            elapsed_time: 0.0,
         })
         .insert_resource(GameResources::default())
         
@@ -69,7 +72,7 @@ fn main() {
         .add_systems(Update, 
             (
                 update_planning_phase.run_if(in_state(GameState::Planning)),
-                update_execution_phase.run_if(in_state(GameState::Execution)),
+                (update_execution_phase, tick_system).run_if(in_state(GameState::Execution)),
             )
         )
         .run();
@@ -102,7 +105,7 @@ fn setup_planning_phase() {
 }
 
 fn setup_execution_phase(mut commands: Commands) {
-    // TODO: Initialize execution phase simulation
+    info!("Starting execution phase");
 }
 
 fn update_planning_phase(
@@ -120,14 +123,40 @@ fn update_planning_phase(
             resources.sprint
         );
     }
+    
+    // TODO: Add a way to transition to execution phase (e.g., button press)
+    // For now, let's automatically transition after 5 seconds
+    if resources.sprint == 1 {  // Only in first sprint for testing
+        next_state.set(GameState::Execution);
+    }
 }
 
 fn update_execution_phase(
     mut next_state: ResMut<NextState<GameState>>,
     mut execution_phase: ResMut<ExecutionPhase>,
+    time: Res<Time>,
     resources: Res<GameResources>,
 ) {
-    // TODO: Handle execution phase simulation steps
+    // Update elapsed time
+    execution_phase.elapsed_time += time.delta_seconds_f64();
+    
+    // Print debug info every second
+    if execution_phase.elapsed_time.floor() > (execution_phase.elapsed_time - time.delta_seconds_f64()).floor() {
+        info!(
+            "Execution Phase - Step: {}/{}, Money: ${:.2}, Time: {:.1}s",
+            execution_phase.current_step + 1,
+            execution_phase.steps.len(),
+            resources.money,
+            execution_phase.elapsed_time
+        );
+    }
+    
+    // After 10 seconds, go back to planning
+    if execution_phase.elapsed_time >= 10.0 {
+        execution_phase.elapsed_time = 0.0;
+        next_state.set(GameState::Planning);
+        info!("Execution phase complete, returning to planning");
+    }
 }
 
 // Easter egg: Hidden developer commentary
