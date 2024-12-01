@@ -63,23 +63,66 @@ Each game consists of multiple sprints. During a sprint:
 - Systems exhibit realistic DevOps patterns
 
 ## Technical Implementation
-Built in Rust 🦀, using:
-- `rand_distr` for probability distributions
-- Custom simulation engine for distribution interactions
-- Feedback loop propagation system
+Built with 🦀 Rust, leveraging:
+- `bevy` (0.11) for game engine and ECS
+- `bevy_egui` (0.21) for immediate mode GUI
+- `petgraph` (0.6) for system architecture simulation
+- `statrs` (0.16) and `rand_distr` (0.4) for probability distributions
+- `serde` (1.0) for data serialization
+
+### Current Features
+- System architecture simulation using directed graphs
+- Real-time distribution sampling and visualization
+- Technical debt propagation system
+- Sprint-based gameplay loop
+- Resource management (money, reputation)
+- Multiple architecture types (starting with Monolith)
+
+### Game States
+1. **Loading** - Initial game setup
+2. **Planning** - Card selection and strategy phase
+3. **Running** - Simulation and outcome calculation
+
+### System Components
+- **Nodes**: Represent services/components with health and tech debt metrics
+- **Edges**: Represent dependencies with reliability and latency properties
+- **Distributions**: Normal and LogNormal distributions for various system behaviors
 
 ## Development Status
-🚧 Currently in early development
+🚧 Alpha Development
+- ✅ Core game loop implemented
+- ✅ Basic system simulation
+- ✅ Technical debt mechanics
+- ✅ Resource management
+- 🏗️ Card system (In Progress)
+- 🏗️ UI Implementation (In Progress)
+- 📋 Distribution visualization (Planned)
+
+## Easter Eggs 🥚
+Keep an eye out for:
+- The mythical "coffee_machine" service
+- Hidden test assertions about perfect systems
+- Love notes from the developers in the game loop
+- Quantum-entangled bugs that defy normal debugging
 
 ## Contributing
-We welcome contributions! Particularly interested in:
-- Distribution interaction models
-- Card design and balance
-- Feedback loop mechanics
-- Visualization of probability distributions
+We welcome contributions! Current focus areas:
+- Card system implementation
+- UI/UX improvements
+- Distribution visualization
+- Additional architecture types
+- Test coverage and property-based testing
+
+## Building and Running
+```bash
+cargo run  # For development build
+cargo run --release  # For optimized release build
+```
 
 ## License
 MIT
 
 ---
 *"In theory, there is no difference between theory and practice. In practice, there is." - Commonly attributed to Yogi Berra*
+
+*"Every line of code is a tiny prayer to the chaos gods" - DevOps Entropy Development Team*

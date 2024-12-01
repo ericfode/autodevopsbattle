@@ -1,24 +1,17 @@
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
-use crate::plugins::UiPlugin;
-use resources::{GameResources, create_initial_system};
-use components::SystemGraph;
-use systems::game_loop::tick_system;
+use devops_entropy::{
+    plugins::UiPlugin,
+    resources::{GameResources, create_initial_system},
+    components::SystemGraph,
+    systems::game_loop::tick_system,
+    GameState,
+};
 
 mod components;
 mod resources;
 mod systems;
 mod plugins;
-
-// Game states
-#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
-pub enum GameState {
-    #[default]
-    MainMenu,
-    Planning,
-    Execution,
-    GameOver,
-}
 
 // Phase tracking for execution state
 #[derive(Resource)]
@@ -29,6 +22,11 @@ struct ExecutionPhase {
 }
 
 fn main() {
+    // Set up crash handler first
+    setup_crash_handler();
+    
+    info!("🎮 Starting DevOps Entropy Game");
+    
     App::new()
         // Add core Bevy plugins
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -38,12 +36,14 @@ fn main() {
                 present_mode: bevy::window::PresentMode::AutoVsync,
                 mode: bevy::window::WindowMode::Windowed,
                 position: bevy::window::WindowPosition::Centered(bevy::window::MonitorSelection::Primary),
+                prevent_default_event_handling: true,
+                window_level: bevy::window::WindowLevel::AlwaysOnTop,
+                focused: true,
                 ..default()
             }),
             ..default()
         }))
-        // Add egui for technical UI
-        .add_plugins(EguiPlugin)
+        // Add UI plugin (which includes EguiPlugin)
         .add_plugins(UiPlugin)
         
         // Add game states
@@ -68,14 +68,18 @@ fn main() {
         
         // Systems that run in specific states
         .add_systems(OnEnter(GameState::Planning), setup_planning_phase)
-        .add_systems(OnEnter(GameState::Execution), setup_execution_phase)
+        .add_systems(OnEnter(GameState::Running), setup_execution_phase)
         .add_systems(Update, 
             (
                 update_planning_phase.run_if(in_state(GameState::Planning)),
-                (update_execution_phase, tick_system).run_if(in_state(GameState::Execution)),
+                (update_execution_phase, tick_system).run_if(in_state(GameState::Running)),
+                handle_window_close,
             )
         )
+        .add_event::<bevy::app::AppExit>() // Add exit event handling
         .run();
+        
+    info!("👋 Game exited normally");
 }
 
 // Initialize game state and spawn initial system
@@ -99,12 +103,11 @@ fn setup_game(
     info!("Set game state to Planning");
 }
 
-// Remove old setup_planning_phase since we don't want to respawn the system
 fn setup_planning_phase() {
-    // Planning phase is set up in setup_game
+    info!("Starting planning phase");
 }
 
-fn setup_execution_phase(mut commands: Commands) {
+fn setup_execution_phase() {
     info!("Starting execution phase");
 }
 
@@ -127,7 +130,7 @@ fn update_planning_phase(
     // TODO: Add a way to transition to execution phase (e.g., button press)
     // For now, let's automatically transition after 5 seconds
     if resources.sprint == 1 {  // Only in first sprint for testing
-        next_state.set(GameState::Execution);
+        next_state.set(GameState::Running);
     }
 }
 
@@ -157,6 +160,27 @@ fn update_execution_phase(
         next_state.set(GameState::Planning);
         info!("Execution phase complete, returning to planning");
     }
+}
+
+fn handle_window_close(
+    keyboard: Res<Input<KeyCode>>,
+    mut app_exit_events: EventWriter<bevy::app::AppExit>,
+) {
+    // Only close window on Escape key press
+    if keyboard.just_pressed(KeyCode::Escape) {
+        info!("Normal exit requested via Escape key");
+        // Send exit event to cleanly shut down the game
+        app_exit_events.send(bevy::app::AppExit);
+    }
+}
+
+// Add panic handler for crash detection
+fn setup_crash_handler() {
+    std::panic::set_hook(Box::new(|panic_info| {
+        error!("🚨 Game crashed! Panic info: {}", panic_info);
+        // You could also save crash logs or perform other cleanup here
+        std::process::exit(1); // Exit with error code
+    }));
 }
 
 // Easter egg: Hidden developer commentary
